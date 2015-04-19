@@ -150,6 +150,8 @@ class DataCollector:
 
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
 
+		self.unique_authors_by_month = {}
+
 		self.total_commits = 0
 		self.total_files = 0
 		self.authors_by_commits = 0
@@ -346,6 +348,17 @@ class GitDataCollector(DataCollector):
 			if mail.find('@') != -1:
 				domain = mail.rsplit('@', 1)[1]
 			date = datetime.datetime.fromtimestamp(float(stamp))
+
+			yymm = date.strftime('%Y-%m')
+                        if yymm not in self.unique_authors_by_month:
+				self.unique_authors_by_month[yymm] = []
+			if mail not in self.unique_authors_by_month[yymm]:
+                                self.unique_authors_by_month[yymm].append(mail);
+			yymmdd = date.strftime('%Y-%m-%d')
+			if yymmdd not in self.unique_authors_by_month:
+				self.unique_authors_by_month[yymmdd] = []
+			if mail not in self.unique_authors_by_month[yymmdd]:
+				self.unique_authors_by_month[yymmdd].append(mail);
 
 			# First and last commit stamp (may be in any order because of cherry-picking and patches)
 			if stamp > self.last_commit_stamp:
@@ -925,9 +938,9 @@ class HTMLReportCreator(ReportCreator):
 
 		# Commits by year/month
 		f.write(html_header(2, 'Commits by year/month and day'))
-		f.write('<div class="vtable"><table><tr><th>Month/Day</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
+		f.write('<div class="vtable"><table><tr><th>Month/Day</th><th>Commits</th><th>Lines added</th><th>Lines removed</th><th>Unique Contributors</th></tr>')
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
-			f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
+			f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0), len(data.unique_authors_by_month.get(yymm,0))))
 		f.write('</table></div>')
 		f.write('<img src="commits_by_year_month.png" alt="Commits by year/month">')
 		fg = open(path + '/commits_by_year_month_day.dat', 'w')
