@@ -160,10 +160,13 @@ class DataCollector:
 		# author of the month
 		self.author_of_month = {} # month -> author -> commits
 		self.author_of_year = {} # year -> author -> commits
+		self.commits_by_day = {} # day -> commits
 		self.commits_by_month = {} # month -> commits
 		self.commits_by_year = {} # year -> commits
+		self.lines_added_by_day = {} # day -> lines added
 		self.lines_added_by_month = {} # month -> lines added
 		self.lines_added_by_year = {} # year -> lines added
+		self.lines_removed_by_day = {} # day -> lines removed
 		self.lines_removed_by_month = {} # month -> lines removed
 		self.lines_removed_by_year = {} # year -> lines removed
 		self.first_commit_stamp = 0
@@ -398,6 +401,10 @@ class GitDataCollector(DataCollector):
 				self.authors[author]['first_commit_stamp'] = stamp
 			if stamp < self.authors[author]['first_commit_stamp']:
 				self.authors[author]['first_commit_stamp'] = stamp
+
+			# author of the day
+			yymmdd = date.strftime('%Y-%m-%d')
+			self.commits_by_month[yymmdd] = self.commits_by_month.get(yymmdd, 0) + 1
 
 			# author of the month/year
 			yymm = date.strftime('%Y-%m')
@@ -913,13 +920,13 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<img src="month_of_year.png" alt="Month of Year">')
 
 		# Commits by year/month
-		f.write(html_header(2, 'Commits by year/month'))
-		f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
+		f.write(html_header(2, 'Commits by year/month and day'))
+		f.write('<div class="vtable"><table><tr><th>Month/Day</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
 			f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
 		f.write('</table></div>')
 		f.write('<img src="commits_by_year_month.png" alt="Commits by year/month">')
-		fg = open(path + '/commits_by_year_month.dat', 'w')
+		fg = open(path + '/commits_by_year_month_day.dat', 'w')
 		for yymm in sorted(data.commits_by_month.keys()):
 			fg.write('%s %s\n' % (yymm, data.commits_by_month[yymm]))
 		fg.close()
@@ -1248,7 +1255,7 @@ set xtics rotate
 set bmargin 5
 set grid y
 set ylabel "Commits"
-plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
+plot 'commits_by_year_month_day.dat' using 1:2:(0.5) w boxes fs solid
 """)
 		f.close()
 
