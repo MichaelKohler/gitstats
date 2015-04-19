@@ -563,6 +563,10 @@ class GitDataCollector(DataCollector):
 						yymm = date.strftime('%Y-%m')
 						self.lines_added_by_month[yymm] = self.lines_added_by_month.get(yymm, 0) + inserted
 						self.lines_removed_by_month[yymm] = self.lines_removed_by_month.get(yymm, 0) + deleted
+						
+						yymmdd = date.strftime('%Y-%m-%d')
+						self.lines_added_by_month[yymmdd] = self.lines_added_by_month.get(yymmdd, 0) + inserted
+                                                self.lines_removed_by_month[yymmdd] = self.lines_removed_by_month.get(yymmdd, 0) + deleted
 
 						yy = date.year
 						self.lines_added_by_year[yy] = self.lines_added_by_year.get(yy,0) + inserted
